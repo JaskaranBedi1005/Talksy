@@ -16,21 +16,32 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.url} - Origin: ${req.headers.origin}`);
     next();
 });
-const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, "");
+const frontendUrl = process.env.FRONTEND_URL?.trim().replace(/\/$/, "");
 const allowedOrigins = frontendUrl
     ? [frontendUrl, "http://localhost:5173"]
     : ["http://localhost:5173"];
 
-console.log("Allowed Origins:", allowedOrigins);
+// This will show up in Render logs when the server starts
+console.log("--- CORS CONFIGURATION ---");
+console.log("RAW FRONTEND_URL ENV:", process.env.FRONTEND_URL);
+console.log("NORMALIZED ALLOWED ORIGINS:", allowedOrigins);
+console.log("--------------------------");
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl)
+        // Log every CORS request to see what's happening
+        console.log(`CORS Check - Arriving Origin: ${origin}`);
+
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+
+        // Normalize arriving origin (remove trailing slash)
+        const normalizedOrigin = origin.replace(/\/$/, "");
+
+        if (allowedOrigins.includes(normalizedOrigin)) {
+            console.log(`CORS Success: ${normalizedOrigin} is in allowed list`);
             callback(null, true);
         } else {
-            console.log("CORS blocked origin:", origin);
+            console.log(`CORS Reject: ${normalizedOrigin} is NOT in ${JSON.stringify(allowedOrigins)}`);
             callback(new Error("Not allowed by CORS"));
         }
     },
