@@ -1,12 +1,12 @@
-# Talksy 💬
+# Talksy 
 
 Talksy is a feature-rich, real-time communication platform that supports instant messaging, high-quality video calls, and crystal-clear voice calls. Built with the MERN stack and WebRTC, it provides a seamless and responsive experience across devices.
 
-## 🚀 Live Demo
+## Live Demo
 - **Frontend:** [https://talksy-dusky.vercel.app](https://talksy-dusky.vercel.app)
 - **Backend:** [https://talksy-bngw.onrender.com](https://talksy-bngw.onrender.com)
 
-## ✨ Features
+## Features
 - **Real-time Messaging:** Powered by Socket.io for instant text delivery.
 - **WebRTC Video & Voice Calls:** Peer-to-peer calls with volume boosting and auto-gain control.
 - **Online Status:** Real-time visibility of active users.
@@ -15,14 +15,14 @@ Talksy is a feature-rich, real-time communication platform that supports instant
 - **Profile Management:** Customizable avatars and bios.
 - **Responsive Design:** Optimized for both mobile and desktop views using TailwindCSS.
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Frontend:** React, TailwindCSS, Axios, Lucide React, React Hot Toast
 - **Backend:** Node.js, Express.js, MongoDB (Mongoose)
 - **Real-time:** Socket.io, Simple-Peer (WebRTC)
 - **Storage:** Cloudinary (for profile and chat images)
 - **Deployment:** Vercel (Frontend), Render (Backend)
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 ### Server (`/server/.env`)
 ```env
@@ -40,7 +40,7 @@ FRONTEND_URL=your_vercel_deployment_url
 VITE_BACKEND_URL=your_render_backend_url
 ```
 
-## 🏃 Local Setup
+## Local Setup
 
 1. **Clone the repository:**
    ```bash
@@ -52,7 +52,6 @@ VITE_BACKEND_URL=your_render_backend_url
    ```bash
    cd server
    npm install
-   # Add your .env file
    npm run server
    ```
 
@@ -60,12 +59,6 @@ VITE_BACKEND_URL=your_render_backend_url
    ```bash
    cd ../client
    npm install
-   # Add your .env file
    npm run dev
    ```
-
-## 📄 License
-This project is licensed under the ISC License.
-
----
-Built with ❤️ by [Jaskaran Bedi](https://github.com/JaskaranBedi1005)
+   
