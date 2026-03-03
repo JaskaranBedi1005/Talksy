@@ -10,15 +10,33 @@ import { Server } from "socket.io"
 configDotenv();
 const app = express();
 const server = http.createServer(app);
-const allowedOrigins = process.env.FRONTEND_URL
-    ? [process.env.FRONTEND_URL, "http://localhost:5173"]
+
+// Debug middleware to log all requests and their origins
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+    next();
+});
+const frontendUrl = process.env.FRONTEND_URL?.replace(/\/$/, "");
+const allowedOrigins = frontendUrl
+    ? [frontendUrl, "http://localhost:5173"]
     : ["http://localhost:5173"];
 
+console.log("Allowed Origins:", allowedOrigins);
+
 app.use(cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+            callback(null, true);
+        } else {
+            console.log("CORS blocked origin:", origin);
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "token", "Authorization"]
+    allowedHeaders: ["Content-Type", "token", "Authorization", "X-Requested-With"]
 }));
 
 
