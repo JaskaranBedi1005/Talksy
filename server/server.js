@@ -24,33 +24,44 @@ const allowedOrigins = frontendUrl
     ? [frontendUrl, "http://localhost:5173"]
     : ["http://localhost:5173"];
 
+// Manual Preflight & CORS Handler (as early as possible)
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const normalizedOrigin = origin?.replace(/\/$/, "");
+
+    if (origin && (allowedOrigins.includes(normalizedOrigin) || normalizedOrigin.includes("vercel.app"))) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, token, Authorization, X-Requested-With");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
+    // Handle Preflight (OPTIONS)
+    if (req.method === "OPTIONS") {
+        console.log(`CORS Preflight: ${origin} -> SUCCESS`);
+        return res.sendStatus(204);
+    }
+    next();
+});
+
 // This will show up in Render logs when the server starts
 console.log("--- CORS CONFIGURATION ---");
 console.log("RAW FRONTEND_URL ENV:", process.env.FRONTEND_URL);
 console.log("NORMALIZED ALLOWED ORIGINS:", allowedOrigins);
 console.log("--------------------------");
 
+// Keep the standard CORS as a secondary check/helper
 app.use(cors({
     origin: (origin, callback) => {
-        // Log every CORS request to see what's happening
-        console.log(`CORS Check - Arriving Origin: ${origin}`);
-
         if (!origin) return callback(null, true);
-
-        // Normalize arriving origin (remove trailing slash)
         const normalizedOrigin = origin.replace(/\/$/, "");
-
-        if (allowedOrigins.includes(normalizedOrigin)) {
-            console.log(`CORS Success: ${normalizedOrigin} is in allowed list`);
+        if (allowedOrigins.includes(normalizedOrigin) || normalizedOrigin.includes("vercel.app")) {
             callback(null, true);
         } else {
-            console.log(`CORS Reject: ${normalizedOrigin} is NOT in ${JSON.stringify(allowedOrigins)}`);
-            callback(new Error("Not allowed by CORS"));
+            callback(new Error(`CORS Reject: ${normalizedOrigin}`));
         }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "token", "Authorization", "X-Requested-With"]
 }));
 
 
