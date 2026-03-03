@@ -16,7 +16,10 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.url} - Origin: ${req.headers.origin}`);
     next();
 });
-const frontendUrl = process.env.FRONTEND_URL?.trim().replace(/\/$/, "");
+let frontendUrl = process.env.FRONTEND_URL?.trim().replace(/\/$/, "");
+if (frontendUrl && !frontendUrl.startsWith("http")) {
+    frontendUrl = `https://${frontendUrl}`;
+}
 const allowedOrigins = frontendUrl
     ? [frontendUrl, "http://localhost:5173"]
     : ["http://localhost:5173"];
