@@ -28,25 +28,50 @@ const VideoCall = () => {
 
     // Attach remote stream to video element AND play audio via a DOM audio element
     useEffect(() => {
+        let audioCtx;
         if (remoteStream) {
             // Attach to video element for visual
             if (userVideoRef.current) {
                 userVideoRef.current.srcObject = remoteStream;
             }
-            // Use existing unlocked audio element if available, otherwise create one
-            if (!audioRef.current) {
-                const audioEl = document.createElement('audio');
-                audioEl.style.display = 'none';
-                audioEl.autoplay = true;
-                document.body.appendChild(audioEl);
-                audioRef.current = audioEl;
+
+            // Web Audio API to boost volume beyond 100%
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioCtx.createMediaStreamSource(remoteStream);
+                const gainNode = audioCtx.createGain();
+
+                // Boost volume by 250% (2.5x)
+                gainNode.gain.value = 2.5;
+
+                source.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (audioCtx.state === 'suspended') {
+                    // Resume context (browsers often suspend until interaction)
+                    audioCtx.resume().catch(e => console.error("AudioContext resume failed:", e));
+                }
+                console.log("Volume booster initialized: 2.5x gain applied");
+            } catch (e) {
+                console.error("Web Audio API not supported or failed:", e);
+                // Fallback to simple audio element if Web Audio fails
+                if (!audioRef.current) {
+                    const audioEl = document.createElement('audio');
+                    audioEl.style.display = 'none';
+                    audioEl.autoplay = true;
+                    document.body.appendChild(audioEl);
+                    audioRef.current = audioEl;
+                }
+                audioRef.current.srcObject = remoteStream;
+                audioRef.current.muted = false;
+                audioRef.current.volume = 1.0;
+                audioRef.current.play().catch(playErr => console.error("Fallback audio play FAILED:", playErr));
             }
-            audioRef.current.srcObject = remoteStream;
-            audioRef.current.muted = false;
-            audioRef.current.volume = 1.0;
-            audioRef.current.play().catch(e => console.error("Remote audio play FAILED:", e));
         }
         return () => {
+            if (audioCtx) {
+                audioCtx.close().catch(e => { });
+            }
             if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current.srcObject = null;
@@ -65,9 +90,9 @@ const VideoCall = () => {
         navigator.mediaDevices.getUserMedia({
             video: callType === 'video',
             audio: {
-                echoCancellation: false,
-                noiseSuppression: false,
-                autoGainControl: false
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
             }
         })
             .then((currentStream) => {
